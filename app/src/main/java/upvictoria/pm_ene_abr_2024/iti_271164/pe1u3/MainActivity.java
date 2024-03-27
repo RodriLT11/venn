@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,65 +30,51 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText numCirclesEditText;
-    private Button drawButton;
-    private Button editSetsButton; // Nuevo botón para editar sets
-    private VennDiagramView vennDiagramView;
-    private Map<Integer, String> elementsMap = new HashMap<>(); // Mapa para almacenar los elementos de cada conjunto
+    private RadioGroup numCirclesRadioGroup;
+    private Button editSetsButton;
     private Button saveButton;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    private VennDiagramView vennDiagramView;
+    private Map<Integer, String> elementsMap = new HashMap<>();
 
-        numCirclesEditText = findViewById(R.id.num_circles_edit_text);
-        drawButton = findViewById(R.id.draw_button);
-        editSetsButton = findViewById(R.id.edit_sets_button); // Inicializa el nuevo botón
-        saveButton = findViewById(R.id.save_button); // Nuevo botón para guardar
-        vennDiagramView = findViewById(R.id.venn_diagram_view);
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
 
-        // Inicialización de los números de elementos e intersecciones como 0 por defecto
-        vennDiagramView.setElementCounts(new int[0]);
+    numCirclesRadioGroup = findViewById(R.id.num_circles_radio_group);
+    editSetsButton = findViewById(R.id.edit_sets_button);
+    saveButton = findViewById(R.id.save_button);
+    vennDiagramView = findViewById(R.id.venn_diagram_view);
 
-        drawButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String numCirclesStr = numCirclesEditText.getText().toString().trim();
-                if (!numCirclesStr.isEmpty()) {
-                    int numCircles = Integer.parseInt(numCirclesStr);
-                    vennDiagramView.setNumCircles(numCircles);
+    // Inicialización de los números de elementos e intersecciones como 0 por defecto
+    vennDiagramView.setElementCounts(new int[0]);
 
-                    // Colores para los círculos
-                    int[] colors = new int[numCircles];
-                    for (int i = 0; i < numCircles; i++) {
-                        // Generar colores aleatorios
-                        colors[i] = Color.rgb((int)(Math.random() * 256), (int)(Math.random() * 256), (int)(Math.random() * 256));
-                    }
-                    vennDiagramView.setColors(colors);
-                } else {
-                    // Mostrar un mensaje de error o tomar alguna otra acción si el campo está vacío
-                    Toast.makeText(MainActivity.this, "Por favor ingresa un número de círculos", Toast.LENGTH_SHORT).show();
-                }
+    numCirclesRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup group, int checkedId) {
+            RadioButton radioButton = findViewById(checkedId);
+            if (radioButton != null) {
+                String tag = radioButton.getTag().toString();
+                int numCircles = Integer.parseInt(tag);
+                vennDiagramView.setNumCircles(numCircles);
             }
-        });
+        }
+    });
 
-        // Configurar el OnClickListener para el botón de editar sets
-        editSetsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Abrir un diálogo para editar los sets
-                openEditSetsDialog();
-            }
-        });
+    editSetsButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            openEditSetsDialog();
+        }
+    });
 
-        // Configurar el OnClickListener para el botón de guardar
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openSaveDialog();
-            }
-        });
-    }
+    saveButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            openSaveDialog();
+        }
+    });
+}
 
 
     private void openSaveDialog() {
@@ -229,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
                         intersectionCounts[j][i] = commonElements; // Asegurar simetría en la matriz
 
                         // Quitar los elementos comunes del contador de elementos si hay alguna intersección
-                        if (commonElements > 0) {
+                        if (commonElements > 0 && elementCounts[i] > 0) { // Verificar si el contador negro del círculo es mayor que 0
                             elementCounts[i] -= commonElements;
                             elementCounts[j] -= commonElements;
                         }
@@ -238,8 +226,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // Establecer los recuentos de intersecciones en VennDiagramView
                 vennDiagramView.setIntersectionCounts(intersections);
-
-
 
                 // Mostrar un mensaje de éxito
                 Toast.makeText(MainActivity.this, "Los sets han sido actualizados correctamente", Toast.LENGTH_SHORT).show();
@@ -256,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
         // Mostrar el diálogo
         builder.show();
     }
+
     private int countCommonElements(String[] arr1, String[] arr2) {
         int count = 0;
         for (String element : arr1) {

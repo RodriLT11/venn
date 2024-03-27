@@ -133,11 +133,15 @@ public class VennDiagramView extends View {
                 for (int j = i + 1; j < numCircles; j++) {
                     float intersectionX = (centersX[i] + centersX[j]) / 2;
                     float intersectionY = (centersY[i] + centersY[j]) / 2;
-                    String intersectionText = String.valueOf(intersectionCounts[index]);
-                    float textWidth = paint.measureText(intersectionText);
-                    float textX = intersectionX - textWidth / 2;
-                    float textY = intersectionY + (paint.descent() + paint.ascent()) / 2;
-                    canvas.drawText(intersectionText, textX, textY, paint);
+
+                    // Asegurar que el índice esté dentro de los límites del array intersectionCounts
+                    if (index < intersectionCounts.length) {
+                        String intersectionText = String.valueOf(intersectionCounts[index]);
+                        float textWidth = paint.measureText(intersectionText);
+                        float textX = intersectionX - textWidth / 2;
+                        float textY = intersectionY + (paint.descent() + paint.ascent()) / 2;
+                        canvas.drawText(intersectionText, textX, textY, paint);
+                    }
                     index++;
                 }
             }
